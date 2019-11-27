@@ -21,4 +21,4 @@ pip install requests
       1. `python hitomi_downloader.py 12345 50 100` (Download gallery with ID 12345 using 50 processes up to the 100th image)
       2. `python hitomi_downloader.py 12345 50 0` (Download the entire gallery with ID 12345 using 50 processes)
 3. The image will be saved in the folder `hitomi/<Gallery_Number>`.
-![image001.jpg](/images/img001.jpg)
+![image001.png](/images/img001.png)
