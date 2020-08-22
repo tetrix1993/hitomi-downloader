@@ -99,7 +99,19 @@ def run_process(split1, save_folder, padding, process_no, pics_per_process):
         elif imageUrl[-4:] in ".gif":
             imageFileName = imageFileName + ".gif"
         filepath = save_folder + "/" + imageFileName
-        download_image(imageUrl, filepath, True, headers) 
+        result = download_image(imageUrl, filepath, True, headers)
+        if not result:
+            if 'a' == imageUrl[8]:
+                iter_list = ['b', 'c']
+            elif 'b' == imageUrl[8]:
+                iter_list = ['a', 'c']
+            elif 'c' == imageUrl[8]:
+                iter_list = ['a', 'b']
+            else:
+                continue
+            for j in iter_list:
+                imageUrl = imageUrl[0:8] + j + imageUrl[9:len(imageUrl)]
+                download_image(imageUrl, filepath, True, headers)
 
 def run():
     image_links = get_image_links()
