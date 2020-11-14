@@ -33,6 +33,8 @@ def url_from_hash(galleryid, image, dir):
     ext = ''
     if dir == 'webp':
         ext = 'webp'
+    elif dir == 'avif':
+        ext = 'avif'
     else:
         # get extension from image name
         ext = image[1].split('.').pop()
@@ -84,10 +86,14 @@ def subdomain_from_url(url):
         return url
     return retval
 
-def image_url_from_image(galleryid, image, nowebp):
+def image_url_from_image(galleryid, image, nowebp, haswebp=False, hasavif=False):
     webp = ''
     if len(image[0]) > 0 and len(image[2]) > 0 and not nowebp:
         webp = 'webp'
+    if haswebp:
+        webp = 'webp'
+    elif hasavif:
+        webp = 'avif'
     return url_from_url_from_hash(galleryid, image, webp)
 
 def get_image_links():
@@ -101,14 +107,17 @@ def get_image_links():
         hash = ''
         name = ''
         haswebp = ''
+        hasavif = ''
         if 'hash' in file:
             hash = file['hash']
         if 'name' in file:
             name = file['name']
         if 'haswebp' in file:
             haswebp = str(file['haswebp'])
-        temp_table.append([hash, name, haswebp])
-    
+        if 'hasavif' in file:
+            hasavif = str(file['hasavif'])
+        temp_table.append([hash, name, haswebp, hasavif])
+
     # split1 = raw_js.split(']')[0].split('[')[1].split('{')
     # for i in range(1, len(split1), 1):
     #     if "hash" in split1[i]:
@@ -124,7 +133,13 @@ def get_image_links():
     #     temp_table.append([hash, name, haswebp])
     image_links = []
     for i in range(len(temp_table)):
-        image_link = image_url_from_image(args.ID, temp_table[i], False)
+        hasavif = False
+        haswebp = False
+        if temp_table[i][2] == '1':
+            haswebp = True
+        if temp_table[i][3] == '1':
+            hasavif = True
+        image_link = image_url_from_image(args.ID, temp_table[i], False, haswebp=haswebp, hasavif=hasavif)
         image_links.append(image_link)
     return image_links
 
@@ -144,8 +159,22 @@ def run_process(split1, save_folder, padding, process_no, pics_per_process):
             imageFileName = imageFileName + ".gif"
         elif imageUrl[-5:] in ".webp":
             imageFileName = imageFileName + ".webp"
+        elif imageUrl[-5:] in ".avif":
+            imageFileName = imageFileName + ".avif"
         filepath = save_folder + "/" + imageFileName
-        download_image(imageUrl, filepath, True, headers) 
+        result = download_image(imageUrl, filepath, True, headers)
+        if not result:
+            if 'a' == imageUrl[8]:
+                iter_list = ['b', 'c']
+            elif 'b' == imageUrl[8]:
+                iter_list = ['a', 'c']
+            elif 'c' == imageUrl[8]:
+                iter_list = ['a', 'b']
+            else:
+                continue
+            for j in iter_list:
+                imageUrl = imageUrl[0:8] + j + imageUrl[9:len(imageUrl)]
+                download_image(imageUrl, filepath, True, headers)
 
 def run():
     image_links = get_image_links()
