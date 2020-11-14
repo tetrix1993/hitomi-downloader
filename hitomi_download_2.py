@@ -1,6 +1,7 @@
 import urllib.request
 import argparse
 import math
+import json
 from myutil.util import create_directory
 from myutil.util import download_image
 from myutil.util import get_response
@@ -91,20 +92,36 @@ def image_url_from_image(galleryid, image, nowebp):
 
 def get_image_links():
     raw_js = get_response(HASH_TABLE_LINK)
+    first_index = raw_js.find('{')
+    json_str = raw_js[first_index:len(raw_js) - 1]  # -1 to remove ' at last character
+    json_obj = json.loads(json_str)
+    files = json_obj['files']
     temp_table = [] # arrays of (hash, name, haswebp)
-    split1 = raw_js.split(']')[0].split('[')[1].split('{')
-    for i in range(1, len(split1), 1):
-        if "hash" in split1[i]:
-            hash = split1[i].split('"hash":')[1].split(',')[0]
-            if "null" in hash:
-                hash = ''
-            else:
-                hash = hash.split('"')[1]
-        else:
-            hash = ''
-        name = split1[i].split('"name":"')[1].split('"')[0]
-        haswebp = split1[i].split('"haswebp":')[1].split(',')[0]
+    for file in files:
+        hash = ''
+        name = ''
+        haswebp = ''
+        if 'hash' in file:
+            hash = file['hash']
+        if 'name' in file:
+            name = file['name']
+        if 'haswebp' in file:
+            haswebp = str(file['haswebp'])
         temp_table.append([hash, name, haswebp])
+    
+    # split1 = raw_js.split(']')[0].split('[')[1].split('{')
+    # for i in range(1, len(split1), 1):
+    #     if "hash" in split1[i]:
+    #         hash = split1[i].split('"hash":')[1].split(',')[0]
+    #         if "null" in hash:
+    #             hash = ''
+    #         else:
+    #             hash = hash.split('"')[1]
+    #     else:
+    #         hash = ''
+    #     name = split1[i].split('"name":"')[1].split('"')[0]
+    #     haswebp = split1[i].split('"haswebp":')[1].split(',')[0]
+    #     temp_table.append([hash, name, haswebp])
     image_links = []
     for i in range(len(temp_table)):
         image_link = image_url_from_image(args.ID, temp_table[i], False)
