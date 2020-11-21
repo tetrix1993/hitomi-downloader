@@ -17,6 +17,10 @@ args = parser.parse_args()
 BASE_FOLDER = "hitomi"
 REFERAL_LINK = "https://hitomi.la/reader/" + args.ID + ".html"
 HASH_TABLE_LINK = "https://ltn.hitomi.la/galleries/" + args.ID + ".js"
+#https://aa.hitomi.la/galleries/827706/0002_9JJU8ky_Imgur.png
+
+# if a: aa ba ca. if b: ab bb cb
+SECOND = 'b'
 
 # from common.js
 ADAPOSE = False
@@ -29,14 +33,14 @@ def full_path_from_hash(hash):
 
 def url_from_hash(galleryid, image):
     if ("1" in image[2] or ("0" in image[2] and len(image[0]) == 0)): #haswebp
-        url = '//a.hitomi.la/galleries/' + galleryid + '/' + image[1]
+        url = '//' + SECOND + '.hitomi.la/galleries/' + galleryid + '/' + image[1]
     else:
-        ext = image[1].split('.')[1]
-        url = '//a.hitomi.la/images/'+full_path_from_hash(image[0])+'.'+ext
+        ext = image[1].split('.')[-1]
+        url = '//' + SECOND + '.hitomi.la/images/'+full_path_from_hash(image[0])+'.'+ext
     return url
 
 def url_from_url(url):
-    return url.replace('//a.hitomi.la/', '//'+subdomain_from_url(url)+'.hitomi.la/')
+    return url.replace('//' + SECOND + '.hitomi.la/', '//'+subdomain_from_url(url)+'.hitomi.la/')
 
 def url_from_url_from_hash(galleryid, image):
     return url_from_url(url_from_hash(galleryid, image))
@@ -50,14 +54,14 @@ def subdomain_from_galleryid(g):
 
 def subdomain_from_url(url):
     try:
-        if "a.hitomi.la/images" in url:
-            temp = url.split('//a.hitomi.la/images/')[1][2:4]
+        if '//' + SECOND + ".hitomi.la/images" in url:
+            temp = url.split('//' + SECOND + '.hitomi.la/images/')[1][2:4]
             g = int(temp, 16)
-            url = subdomain_from_galleryid(g) + 'a'
-        elif "a.hitomi.la/galleries" in url:
-            temp = url.split('//a.hitomi.la/galleries/')[1].split('/')[0][-1:]
+            url = subdomain_from_galleryid(g) + SECOND
+        elif '//' + SECOND + ".hitomi.la/galleries" in url:
+            temp = url.split('//' + SECOND + '.hitomi.la/galleries/')[1].split('/')[0][-1:]
             g = int(temp, 10)
-            url = subdomain_from_galleryid(g) + 'a'
+            url = subdomain_from_galleryid(g) + SECOND
     except Exception as e:
         return url
     return url
@@ -65,7 +69,7 @@ def subdomain_from_url(url):
 def get_image_links():
     raw_js = get_response(HASH_TABLE_LINK)
     temp_table = [] # arrays of (hash, name, haswebp)
-    split1 = raw_js.split('{')
+    split1 = raw_js.split(']')[0].split('[')[1].split('{')
     for i in range(1, len(split1), 1):
         if "hash" in split1[i]:
             hash = split1[i].split('"hash":')[1].split(',')[0]
