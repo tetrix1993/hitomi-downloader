@@ -99,7 +99,7 @@ def image_url_from_image(galleryid, image, nowebp, haswebp=False, hasavif=False)
 def get_image_links():
     raw_js = get_response(HASH_TABLE_LINK)
     first_index = raw_js.find('{')
-    json_str = raw_js[first_index:len(raw_js) - 1]  # -1 to remove ' at last character
+    json_str = raw_js[first_index:len(raw_js) - 1].replace('\\', '')  # -1 to remove ' at last character
     json_obj = json.loads(json_str)
     files = json_obj['files']
     temp_table = [] # arrays of (hash, name, haswebp)
